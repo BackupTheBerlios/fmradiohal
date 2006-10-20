@@ -1,0 +1,37 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "FMRadioHAL", "FMRadioHAL.vbproj", "{716BFC5A-30E6-453B-BD84-BBAA88266AF4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "HALTest", "HALTest\HALTest.vbproj", "{0188C75E-D5D3-4BD3-8122-61F7D2679029}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "RDSInterpreter", "RDSInterpreter\RDSInterpreter.vbproj", "{E28037C0-537C-49A2-82B3-76130CA4DBD4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{716BFC5A-30E6-453B-BD84-BBAA88266AF4}.Debug.ActiveCfg = Debug|.NET
+		{716BFC5A-30E6-453B-BD84-BBAA88266AF4}.Debug.Build.0 = Debug|.NET
+		{716BFC5A-30E6-453B-BD84-BBAA88266AF4}.Release.ActiveCfg = Release|.NET
+		{716BFC5A-30E6-453B-BD84-BBAA88266AF4}.Release.Build.0 = Release|.NET
+		{0188C75E-D5D3-4BD3-8122-61F7D2679029}.Debug.ActiveCfg = Debug|.NET
+		{0188C75E-D5D3-4BD3-8122-61F7D2679029}.Debug.Build.0 = Debug|.NET
+		{0188C75E-D5D3-4BD3-8122-61F7D2679029}.Release.ActiveCfg = Release|.NET
+		{0188C75E-D5D3-4BD3-8122-61F7D2679029}.Release.Build.0 = Release|.NET
+		{E28037C0-537C-49A2-82B3-76130CA4DBD4}.Debug.ActiveCfg = Debug|.NET
+		{E28037C0-537C-49A2-82B3-76130CA4DBD4}.Debug.Build.0 = Debug|.NET
+		{E28037C0-537C-49A2-82B3-76130CA4DBD4}.Release.ActiveCfg = Release|.NET
+		{E28037C0-537C-49A2-82B3-76130CA4DBD4}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal
