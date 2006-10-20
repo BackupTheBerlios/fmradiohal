@@ -45,6 +45,8 @@ Public Class Form1
     Friend WithEvents RdsInterpreter_Ctrl1 As HALTest.RDSInterpreter_Ctrl
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents FStxt As System.Windows.Forms.Label
+    Friend WithEvents MinusBtn As System.Windows.Forms.Button
+    Friend WithEvents PlusBtn As System.Windows.Forms.Button
 
     <System.Diagnostics.DebuggerStepThrough()> Private Sub InitializeComponent()
         Me.components = New System.ComponentModel.Container
@@ -54,11 +56,13 @@ Public Class Form1
         Me.RdsInterpreter_Ctrl1 = New HALTest.RDSInterpreter_Ctrl
         Me.Label1 = New System.Windows.Forms.Label
         Me.FStxt = New System.Windows.Forms.Label
+        Me.MinusBtn = New System.Windows.Forms.Button
+        Me.PlusBtn = New System.Windows.Forms.Button
         Me.SuspendLayout()
         '
         'TextBox1
         '
-        Me.TextBox1.Location = New System.Drawing.Point(104, 16)
+        Me.TextBox1.Location = New System.Drawing.Point(120, 16)
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.Size = New System.Drawing.Size(96, 20)
         Me.TextBox1.TabIndex = 2
@@ -66,9 +70,9 @@ Public Class Form1
         '
         'Button1
         '
-        Me.Button1.Location = New System.Drawing.Point(16, 16)
+        Me.Button1.Location = New System.Drawing.Point(48, 16)
         Me.Button1.Name = "Button1"
-        Me.Button1.Size = New System.Drawing.Size(80, 24)
+        Me.Button1.Size = New System.Drawing.Size(64, 24)
         Me.Button1.TabIndex = 3
         Me.Button1.Text = "SetFreq"
         '
@@ -84,7 +88,7 @@ Public Class Form1
         '
         'Label1
         '
-        Me.Label1.Location = New System.Drawing.Point(208, 16)
+        Me.Label1.Location = New System.Drawing.Point(280, 16)
         Me.Label1.Name = "Label1"
         Me.Label1.Size = New System.Drawing.Size(40, 24)
         Me.Label1.TabIndex = 5
@@ -92,20 +96,38 @@ Public Class Form1
         '
         'FStxt
         '
-        Me.FStxt.Location = New System.Drawing.Point(248, 16)
+        Me.FStxt.Location = New System.Drawing.Point(328, 16)
         Me.FStxt.Name = "FStxt"
         Me.FStxt.Size = New System.Drawing.Size(120, 24)
         Me.FStxt.TabIndex = 5
+        '
+        'MinusBtn
+        '
+        Me.MinusBtn.Location = New System.Drawing.Point(224, 16)
+        Me.MinusBtn.Name = "MinusBtn"
+        Me.MinusBtn.Size = New System.Drawing.Size(40, 24)
+        Me.MinusBtn.TabIndex = 6
+        Me.MinusBtn.Text = "-"
+        '
+        'PlusBtn
+        '
+        Me.PlusBtn.Location = New System.Drawing.Point(0, 16)
+        Me.PlusBtn.Name = "PlusBtn"
+        Me.PlusBtn.Size = New System.Drawing.Size(40, 24)
+        Me.PlusBtn.TabIndex = 6
+        Me.PlusBtn.Text = "+"
         '
         'Form1
         '
         Me.AutoScaleBaseSize = New System.Drawing.Size(5, 13)
         Me.ClientSize = New System.Drawing.Size(712, 757)
+        Me.Controls.Add(Me.MinusBtn)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.RdsInterpreter_Ctrl1)
         Me.Controls.Add(Me.Button1)
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.FStxt)
+        Me.Controls.Add(Me.PlusBtn)
         Me.Name = "Form1"
         Me.Text = "Form1"
         Me.ResumeLayout(False)
@@ -166,5 +188,15 @@ Public Class Form1
 
     Private Sub mFMRadioHal_FieldStrength(ByVal Level As Short) Handles mFMRadioHal.FieldStrength
         FStxt.Text = CStr(Level)
+    End Sub
+
+    Private Sub PlusBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles PlusBtn.Click
+        TextBox1.Text = CStr(CShort(TextBox1.Text) + 10)
+        mFMRadioHal.Freq = New FMRadio.FMRadioHAL.Frequency(CShort(TextBox1.Text))
+    End Sub
+
+    Private Sub MinusBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MinusBtn.Click
+        TextBox1.Text = CStr(CShort(TextBox1.Text) - 10)
+        mFMRadioHal.Freq = New FMRadio.FMRadioHAL.Frequency(CShort(TextBox1.Text))
     End Sub
 End Class
