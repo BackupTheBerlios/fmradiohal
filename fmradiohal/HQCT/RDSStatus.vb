@@ -24,128 +24,128 @@ Namespace RDS
 
         Public Event RDS_Message As RDS_Delegate
 
-        Private mSynchronizationFound As Boolean
+        'Private mSynchronizationFound As Boolean
 
 
-        Public Property SynchronizationFound() As Boolean
-            Get
-                Return mSynchronizationFound
-            End Get
-            Set(ByVal Value As Boolean)
-                mSynchronizationFound = Value
-            End Set
-        End Property
-        Private mdataOverflow As Boolean
+        'Public Property SynchronizationFound() As Boolean
+        '    Get
+        '        Return mSynchronizationFound
+        '    End Get
+        '    Set(ByVal Value As Boolean)
+        '        mSynchronizationFound = Value
+        '    End Set
+        'End Property
+        'Private mdataOverflow As Boolean
 
 
-        Public Property DataOverflow() As Boolean
-            Get
-                Return mdataOverflow
-            End Get
-            Set(ByVal Value As Boolean)
-                mdataOverflow = Value
-            End Set
-        End Property
-        Private mresetDetected As Boolean
+        'Public Property DataOverflow() As Boolean
+        '    Get
+        '        Return mdataOverflow
+        '    End Get
+        '    Set(ByVal Value As Boolean)
+        '        mdataOverflow = Value
+        '    End Set
+        'End Property
+        'Private mresetDetected As Boolean
 
 
-        Public Property ResetDetected() As Boolean
-            Get
-                Return mresetDetected
-            End Get
-            Set(ByVal Value As Boolean)
-                mresetDetected = Value
-            End Set
-        End Property
-        Private mlastRDSBlockID As enBlockType
+        'Public Property ResetDetected() As Boolean
+        '    Get
+        '        Return mresetDetected
+        '    End Get
+        '    Set(ByVal Value As Boolean)
+        '        mresetDetected = Value
+        '    End Set
+        'End Property
+        'Private mlastRDSBlockID As enBlockType
 
 
-        Public Property LastRDSBlockID() As enBlockType
-            Get
-                Return mlastRDSBlockID
-            End Get
-            Set(ByVal Value As enBlockType)
-                mlastRDSBlockID = Value
-            End Set
-        End Property
-        Private mlastRDSBlockError As Integer
+        'Public Property LastRDSBlockID() As enBlockType
+        '    Get
+        '        Return mlastRDSBlockID
+        '    End Get
+        '    Set(ByVal Value As enBlockType)
+        '        mlastRDSBlockID = Value
+        '    End Set
+        'End Property
+        'Private mlastRDSBlockError As Integer
 
 
-        Public Property LastRDSBlockError() As Integer
-            Get
-                Return mlastRDSBlockError
-            End Get
-            Set(ByVal Value As Integer)
-                mlastRDSBlockError = Value
-            End Set
-        End Property
-        Private mbadBlocksCounter As Integer
+        'Public Property LastRDSBlockError() As Integer
+        '    Get
+        '        Return mlastRDSBlockError
+        '    End Get
+        '    Set(ByVal Value As Integer)
+        '        mlastRDSBlockError = Value
+        '    End Set
+        'End Property
+        'Private mbadBlocksCounter As Integer
 
 
-        Public Property BadBlocksCounter() As Integer
-            Get
-                Return mbadBlocksCounter
-            End Get
-            Set(ByVal Value As Integer)
-                mbadBlocksCounter = Value
-            End Set
-        End Property
-        Private mgoodBlocksCounter As Integer
+        'Public Property BadBlocksCounter() As Integer
+        '    Get
+        '        Return mbadBlocksCounter
+        '    End Get
+        '    Set(ByVal Value As Integer)
+        '        mbadBlocksCounter = Value
+        '    End Set
+        'End Property
+        'Private mgoodBlocksCounter As Integer
 
 
-        Public Property GoodBlocksCounter() As Integer
-            Get
-                Return mgoodBlocksCounter
-            End Get
-            Set(ByVal Value As Integer)
-                mgoodBlocksCounter = Value
-            End Set
-        End Property
-        Private mprevRDSBlockID As enBlockType
+        'Public Property GoodBlocksCounter() As Integer
+        '    Get
+        '        Return mgoodBlocksCounter
+        '    End Get
+        '    Set(ByVal Value As Integer)
+        '        mgoodBlocksCounter = Value
+        '    End Set
+        'End Property
+        'Private mprevRDSBlockID As enBlockType
 
 
-        Public Property PrevRDSBlockID() As enBlockType
-            Get
-                Return mprevRDSBlockID
-            End Get
-            Set(ByVal Value As enBlockType)
-                mprevRDSBlockID = Value
-            End Set
-        End Property
-        Private mprevRDSBlockError As Integer
+        'Public Property PrevRDSBlockID() As enBlockType
+        '    Get
+        '        Return mprevRDSBlockID
+        '    End Get
+        '    Set(ByVal Value As enBlockType)
+        '        mprevRDSBlockID = Value
+        '    End Set
+        'End Property
+        'Private mprevRDSBlockError As Integer
 
 
-        Public Property PrevRDSBlockError() As Integer
-            Get
-                Return mprevRDSBlockError
-            End Get
-            Set(ByVal Value As Integer)
-                mprevRDSBlockError = Value
-            End Set
-        End Property
-        Private mpreviousBlock As System.Int16
+        'Public Property PrevRDSBlockError() As Integer
+        '    Get
+        '        Return mprevRDSBlockError
+        '    End Get
+        '    Set(ByVal Value As Integer)
+        '        mprevRDSBlockError = Value
+        '    End Set
+        'End Property
+        'Private mpreviousBlock As System.Int16
 
 
-        Public Property PreviousBlock() As System.Int16
-            Get
-                Return mpreviousBlock
-            End Get
-            Set(ByVal Value As System.Int16)
-                mpreviousBlock = Value
-            End Set
-        End Property
+        'Public Property PreviousBlock() As System.Int16
+        '    Get
+        '        Return mpreviousBlock
+        '    End Get
+        '    Set(ByVal Value As System.Int16)
+        '        mpreviousBlock = Value
+        '    End Set
+        'End Property
 
-        Private mlastBlock As System.Int16
+        ' Private mlastBlock As System.Int16
 
 
-        Public Property LastBlock() As System.Int16
-            Get
-                Return mlastBlock
-            End Get
-            Set(ByVal Value As System.Int16)
-                mlastBlock = Value
-            End Set
-        End Property
+        'Public Property LastBlock() As System.Int16
+        '    Get
+        '        Return mlastBlock
+        '    End Get
+        '    Set(ByVal Value As System.Int16)
+        '        mlastBlock = Value
+        '    End Set
+        'End Property
 
 
         Private rdsBlockGroup As FMRadioHAL.stRDSRAWMessage
@@ -162,19 +162,19 @@ Namespace RDS
         Private ignorePreviousBlock As Boolean = True
 
 
-        Public Property ReceivedBlocksCounter() As Long()
-            Get
-                Return mreceivedBlocksCounter
-            End Get
-            Set(ByVal Value As Long())
-                mreceivedBlocksCounter = Value
-            End Set
-        End Property
+        'Public Property ReceivedBlocksCounter() As Long()
+        '    Get
+        '        Return mreceivedBlocksCounter
+        '    End Get
+        '    Set(ByVal Value As Long())
+        '        mreceivedBlocksCounter = Value
+
+        '    End Set
+        'End Property
 
 
-
-        Public Sub decode(ByVal inputBuffer() As Byte)
-            Dim byteOffset As Integer = 4
+        Public Sub decode(ByRef IncMessage As HQCT.stIncMessage)
+            'Dim byteOffset As Integer = 4
 
             '/*
             ' * Byte 4 is RDS STATUS
@@ -206,22 +206,23 @@ Namespace RDS
 
 
             ' byteOffset should be 4 here.
-            Dim rdsStatus As Byte = inputBuffer(byteOffset) : byteOffset = byteOffset + 1
-            SynchronizationFound = ((rdsStatus And &H80) = &H80)
-            DataOverflow = ((rdsStatus And &H40) = &H40)
-            ResetDetected = ((rdsStatus And &H20) = &H20)
-            LastRDSBlockID = CType((rdsStatus And &H1C) >> 2, enBlockType)
-            LastRDSBlockError = (rdsStatus And &H3)
+            'Dim rdsStatus As Byte = inputBuffer(byteOffset) : byteOffset = byteOffset + 1
+
+            'Dim IncMessage As HQCT.stIncMessage
+
+            'SynchronizationFound = ((rdsStatus And &H80) = &H80)
+            'DataOverflow = ((rdsStatus And &H40) = &H40)
+            'ResetDetected = ((rdsStatus And &H20) = &H20)
+            'LastRDSBlockID = CType((rdsStatus And &H1C) >> 2, enBlockType)
+            'LastRDSBlockError = (rdsStatus And &H3)
 
             'ReceivedBlocksCounter(0) += 1
 
-            ReceivedBlocksCounter(LastRDSBlockID) += 1
+            'ReceivedBlocksCounter(LastRDSBlockID) += 1
 
             ' Only update RDS data if we have synch and normal operation
-            If Not ((SynchronizationFound) And (Not DataOverflow) And (Not ResetDetected)) Then
-                ignorePreviousBlock = True
-                Return
-            End If
+
+
 
             'Debug.Write(Constants.BlockTypeDictionary[lastRDSBlockID] + " ");
             'charCount++;
@@ -240,7 +241,7 @@ Namespace RDS
 
 
 
-            mlastBlock = CType(inputBuffer(byteOffset), System.Int16) << 8 : byteOffset = byteOffset + 1
+            'mlastBlock = CType(inputBuffer(byteOffset), System.Int16) << 8 : byteOffset = byteOffset + 1
 
             '/*
             ' * Byte 6 is RDS LDATL
@@ -250,7 +251,8 @@ Namespace RDS
             ' */
             '
 
-            mlastBlock = mlastBlock Or CType(inputBuffer(byteOffset), System.Int16) : byteOffset = byteOffset + 1
+            'mlastBlock = mlastBlock Or CType(inputBuffer(byteOffset), System.Int16) : byteOffset = byteOffset + 1
+            'mlastBlock = IncMessage.LDAT
 
             '/*
             ' * Byte 7 is RDS PDATM
@@ -260,7 +262,7 @@ Namespace RDS
             ' */
 
 
-            PreviousBlock = CType(inputBuffer(byteOffset), System.Int16) << 8 : byteOffset = byteOffset + 1
+            'PreviousBlock = CType(inputBuffer(byteOffset), System.Int16) << 8 : byteOffset = byteOffset + 1
             '/*
             ' * Byte 8 is RDS PDATL
             ' * 
@@ -268,7 +270,8 @@ Namespace RDS
             ' * 7 to 0   LM[7:0]    Block data of previously received RDS block, least significant byte. Only relevant when reduced data request mode is active.
             ' */
 
-            PreviousBlock = PreviousBlock Or CType(inputBuffer(byteOffset), System.Int16) : byteOffset = byteOffset + 1
+            'PreviousBlock = PreviousBlock Or CType(inputBuffer(byteOffset), System.Int16) : byteOffset = byteOffset + 1
+            'PreviousBlock = IncMessage.PDAT
 
             '/*
             ' * Byte 9 is RDS COUNT
@@ -291,22 +294,32 @@ Namespace RDS
             '
 
             ' byteOffset should be 9 here.
-            Dim rdsCount As Byte = inputBuffer(byteOffset) : byteOffset = byteOffset + 1
+            'Dim rdsCount As Byte = inputBuffer(byteOffset) : byteOffset = byteOffset + 1
 
             ' byteOffset should be 10 here.
-            Dim rdsPrevious As Byte = inputBuffer(byteOffset) : byteOffset = byteOffset + 1
+            'Dim rdsPrevious As Byte = inputBuffer(byteOffset) : byteOffset = byteOffset + 1
 
-            BadBlocksCounter = rdsCount And &HFC
-            GoodBlocksCounter = ((rdsCount And &H3) << 4) Or ((rdsPrevious And &HE0) >> 4)
+            'BadBlocksCounter = rdsCount And &HFC
+            'BadBlocksCounter = IncMessage.RDS_COUNT_PBIN.BBC
+            'GoodBlocksCounter = ((rdsCount And &H3) << 4) Or ((rdsPrevious And &HE0) >> 4)
+            'GoodBlocksCounter = IncMessage.RDS_COUNT_PBIN.GBC
+
+            If Not ((IncMessage.RDS_STATUS.SYNC) And (Not IncMessage.RDS_STATUS.DOFL) And (Not IncMessage.RDS_STATUS.RSTD)) Then
+                ignorePreviousBlock = True
+                Return
+            End If
 
             If ignorePreviousBlock Then
                 ignorePreviousBlock = False ' Reset
-                PrevRDSBlockID = enBlockType.ib ' ib
-                PrevRDSBlockError = &H3 ' uncorrectable error
+                If IncMessage.RDS_COUNT_PBIN.PBI <> HQCT.enBI.ib Then
+                    Debug.Write("IncMessage.RDS_COUNT_PBIN.PBI <> HQCT.enBI.ib!")
+                End If
+                'PrevRDSBlockID = enBlockType.ib ' ib
+                'PrevRDSBlockError = &H3 ' uncorrectable error
             Else
-                PrevRDSBlockID = CType(((rdsPrevious And &H1C) >> 2), enBlockType)
-                PrevRDSBlockError = rdsPrevious And &H3
-                ReceivedBlocksCounter(PrevRDSBlockID) += 1
+                'PrevRDSBlockID = CType(((rdsPrevious And &H1C) >> 2), enBlockType)
+                'PrevRDSBlockError = rdsPrevious And &H3
+                'ReceivedBlocksCounter(PrevRDSBlockID) += 1
             End If
 
 
@@ -316,53 +329,53 @@ Namespace RDS
             Select Case blockBuildingMethod
                 Case 0
 
-                    If (LastRDSBlockID = enBlockType.A) And LastRDSBlockError < &H3 Then
-                        rdsBlockGroup.Block0 = mlastBlock
+                    If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.A) And IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR Then
+                        rdsBlockGroup.Block0 = IncMessage.LDAT
 
                         AReceived = True
                         BReceived = False
                         CReceived = False
                         DReceived = False
                     Else
-                        If (PrevRDSBlockID = enBlockType.A) And PrevRDSBlockError < &H3 Then
-                            rdsBlockGroup.Block0 = mpreviousBlock
+                        If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.A) And IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR Then
+                            rdsBlockGroup.Block0 = IncMessage.PDAT
                             AReceived = True
                             BReceived = False
                             CReceived = False
                             DReceived = False
                         End If
                     End If
-                    If (LastRDSBlockID = enBlockType.B) And LastRDSBlockError < &H3 And AReceived Then
-                        rdsBlockGroup.Block1 = mlastBlock
+                    If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.B) And IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR And AReceived Then
+                        rdsBlockGroup.Block1 = IncMessage.LDAT
 
                         BReceived = True
                         CReceived = False
                         DReceived = False
                     Else
-                        If (PrevRDSBlockID = enBlockType.B) And (PrevRDSBlockError < &H3) And AReceived Then
-                            rdsBlockGroup.Block1 = mpreviousBlock
+                        If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.B) And (IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR) And AReceived Then
+                            rdsBlockGroup.Block1 = IncMessage.PDAT
                             BReceived = True
                             CReceived = False
                             DReceived = False
                         End If
                     End If
-                    If (LastRDSBlockID = enBlockType.C) And LastRDSBlockError < &H3 And BReceived Then
-                        rdsBlockGroup.Block2 = mlastBlock
+                    If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.C) And (IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR) And AReceived Then
+                        rdsBlockGroup.Block2 = IncMessage.LDAT
                         CReceived = True
                         DReceived = False
                     Else
-                        If (PrevRDSBlockID = enBlockType.C) And PrevRDSBlockError < &H3 And BReceived Then
-                            rdsBlockGroup.Block2 = mpreviousBlock
+                        If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.C) And (IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR) And BReceived Then
+                            rdsBlockGroup.Block2 = IncMessage.PDAT
                             CReceived = True
                             DReceived = False
                         End If
                     End If
-                    If (LastRDSBlockID = enBlockType.D) And LastRDSBlockError < &H3 And CReceived Then
-                        rdsBlockGroup.Block3 = mlastBlock
+                    If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.D) And (IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR) And CReceived Then
+                        rdsBlockGroup.Block3 = IncMessage.LDAT
                         DReceived = True
                     Else
-                        If (PrevRDSBlockID = enBlockType.D) And PrevRDSBlockError < &H3 And CReceived Then
-                            rdsBlockGroup.Block3 = mpreviousBlock
+                        If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.D) And (IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR) And CReceived Then
+                            rdsBlockGroup.Block3 = IncMessage.PDAT
                             DReceived = True
                         End If
                     End If
@@ -377,8 +390,8 @@ Namespace RDS
                     End If
 
                     ' Try not to miss a trailing A block
-                    If (LastRDSBlockID = enBlockType.A) And LastRDSBlockError < &H3 Then
-                        rdsBlockGroup.Block0 = mlastBlock
+                    If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.A) And (IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR) Then
+                        rdsBlockGroup.Block0 = IncMessage.LDAT
                         AReceived = True
                         BReceived = False
                         CReceived = False
@@ -388,49 +401,49 @@ Namespace RDS
 
                 Case 1
 
-                    If (PrevRDSBlockID = enBlockType.A) And (LastRDSBlockID = enBlockType.B) Then
-                        rdsBlockGroup.Block0 = mpreviousBlock
-                        rdsBlockGroup.Block1 = mlastBlock
-                        rdsBlocksAandBReceived = True
-                    End If
-                    If (PrevRDSBlockID = enBlockType.C) And (LastRDSBlockID = enBlockType.D) Then
-                        rdsBlockGroup.Block2 = mpreviousBlock
-                        rdsBlockGroup.Block3 = mlastBlock
+                    'If (PrevRDSBlockID = enBlockType.A) And (LastRDSBlockID = enBlockType.B) Then
+                    '    rdsBlockGroup.Block0 = mpreviousBlock
+                    '    rdsBlockGroup.Block1 = mlastBlock
+                    '    rdsBlocksAandBReceived = True
+                    'End If
+                    'If (PrevRDSBlockID = enBlockType.C) And (LastRDSBlockID = enBlockType.D) Then
+                    '    rdsBlockGroup.Block2 = mpreviousBlock
+                    '    rdsBlockGroup.Block3 = mlastBlock
 
-                        If rdsBlocksAandBReceived Then
-                            rdsGroupFound = True
-                            rdsBlocksAandBReceived = False
-                            rdsBlocksDandAReceived = False
-                        End If
-                    End If
-                    If (PrevRDSBlockID = enBlockType.D) And (LastRDSBlockID = enBlockType.A) Then
-                        rdsBlockGroup.Block3 = mpreviousBlock
+                    '    If rdsBlocksAandBReceived Then
+                    '        rdsGroupFound = True
+                    '        rdsBlocksAandBReceived = False
+                    '        rdsBlocksDandAReceived = False
+                    '    End If
+                    'End If
+                    'If (PrevRDSBlockID = enBlockType.D) And (LastRDSBlockID = enBlockType.A) Then
+                    '    rdsBlockGroup.Block3 = mpreviousBlock
 
-                        If rdsBlocksDandAReceived Then
-                            rdsGroupFound = True
-                            rdsBlocksAandBReceived = False
-                            rdsBlocksDandAReceived = False
-                        End If
-                    End If
-                    If (PrevRDSBlockID = enBlockType.B) And (LastRDSBlockID = enBlockType.C) Then
-                        rdsBlockGroup.Block1 = mpreviousBlock
+                    '    If rdsBlocksDandAReceived Then
+                    '        rdsGroupFound = True
+                    '        rdsBlocksAandBReceived = False
+                    '        rdsBlocksDandAReceived = False
+                    '    End If
+                    'End If
+                    'If (PrevRDSBlockID = enBlockType.B) And (LastRDSBlockID = enBlockType.C) Then
+                    '    rdsBlockGroup.Block1 = mpreviousBlock
 
-                        rdsBlockGroup.Block2 = mlastBlock
-                    End If
+                    '    rdsBlockGroup.Block2 = mlastBlock
+                    'End If
 
 
 
-                    If rdsGroupFound Then
+                    'If rdsGroupFound Then
 
-                        'interpreter.decode(rdsBlockGroup, 8)
-                        RaiseEvent RDS_Message(rdsBlockGroup)
-                        rdsGroupFound = False
-                    End If
+                    '    'interpreter.decode(rdsBlockGroup, 8)
+                    '    RaiseEvent RDS_Message(rdsBlockGroup)
+                    '    rdsGroupFound = False
+                    'End If
 
-                    If (PrevRDSBlockID = enBlockType.D) And (LastRDSBlockID = enBlockType.A) Then
-                        rdsBlockGroup.Block0 = mlastBlock
-                        rdsBlocksDandAReceived = True
-                    End If
+                    'If (PrevRDSBlockID = enBlockType.D) And (LastRDSBlockID = enBlockType.A) Then
+                    '    rdsBlockGroup.Block0 = mlastBlock
+                    '    rdsBlocksDandAReceived = True
+                    'End If
             End Select
         End Sub 'decode
     End Class 'Status

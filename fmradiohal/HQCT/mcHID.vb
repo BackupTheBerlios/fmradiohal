@@ -5,11 +5,13 @@ Imports System.Runtime.InteropServices
 ' DllImport
 Namespace HQCT
 
-    Class mcHID
+    Friend Class mcHID
         Private Const DLL_NAME As String = "mcHID.dll"
 
         Public Const VENDOR_ID As Integer = &H4D8
         Public Const PRODUCT_ID As Integer = &HA
+        Public Const INPUT_BUFFER_SIZE As Integer = 32
+        Public Const OUTPUT_BUFFER_SIZE As Integer = 32
 
         Public Const WM_HID_EVENT As Integer = &H8000 + 200
         Public Const NOTIFY_PLUGGED As Integer = &H1
@@ -17,8 +19,7 @@ Namespace HQCT
         Public Const NOTIFY_CHANGED As Integer = &H3
         Public Const NOTIFY_READ As Integer = &H4
 
-        Public Const INPUT_BUFFER_SIZE As Integer = 32
-        Public Const OUTPUT_BUFFER_SIZE As Integer = 32
+
 
 
         <DllImport(DLL_NAME)> _

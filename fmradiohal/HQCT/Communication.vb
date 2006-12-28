@@ -3,64 +3,111 @@ Option Strict On
 Imports System
 
 Imports System.Text
-Imports System.Runtime.InteropServices
+
 Imports System.Windows.Forms
 Imports System.Diagnostics
 Imports System.Threading
+Imports System.Diagnostics.Trace
+
 
 Namespace HQCT
-    Friend Enum enHQCT_CMD
-        HQCT_TUNE = 0
-        HQCT_SEEK_UP = 1
-        HQCT_SEEK_DOWN = 2
-        HQCT_READ = 3
-        HQCT_SET_BAND = 4
-        HQCT_GET_FREQUENCY = 5
-        HQCT_SCAN_UP = 6
-        HQCT_SCAN_DOWN = 7
-        HQCT_SET_MIN_LEVEL = 8
-        HQCT_CANCEL = 9
-        HQCT_SET_TEF = 10
-        HQCT_EEPROM = 11
-        HQCT_AF_UPDATE = 12
-    End Enum
 
-    Public Class Communication
-        Public Const HQCT_TUNE As Integer = 0
-        Public Const HQCT_SEEK_UP As Integer = 1
-        Public Const HQCT_SEEK_DOWN As Integer = 2
-        Public Const HQCT_READ As Integer = 3
-        Public Const HQCT_SET_BAND As Integer = 4
-        Public Const HQCT_GET_FREQUENCY As Integer = 5
-        Public Const HQCT_SCAN_UP As Integer = 6
-        Public Const HQCT_SCAN_DOWN As Integer = 7
-        Public Const HQCT_SET_MIN_LEVEL As Integer = 8
-        Public Const HQCT_CANCEL As Integer = 9
-        Public Const HQCT_SET_TEF As Integer = 10
-        Public Const HQCT_EEPROM As Integer = 11
-        Public Const HQCT_AF_UPDATE As Integer = 12
-        'Private mHandle As IntPtr
+    Friend Class Communication
         Private mDevice As Device
-        Private WithEvents mHIDForm As HIDForm
+        'Dim mHandles As HID.frmHID.stHandles
+        Private WithEvents mfrmHID As HID.frmHID
 
-        Private m_reportlist As New RingBuffer(1000)
+        'Friend m_reportlist As New RingBuffer(1000)
+
+        Public Const VENDOR_ID As Integer = &H4D8
+        Public Const PRODUCT_ID As Integer = &HA
+        Public Const INPUT_BUFFER_SIZE As Integer = 32
+        Public Const OUTPUT_BUFFER_SIZE As Integer = 32
 
 
 
+        'Friend mMCHIDThread As System.Threading.Thread
+        'Friend mReportConsumerThread As System.Threading.Thread
+        'Friend WithEvents mReportConsumer As ReportConsumer
 
+        Public Delegate Sub RDS_Delegate(ByRef RDSMessage As FMRadioHAL.stRDSRAWMessage)
+        Public Delegate Sub FS_Delegate(ByVal Value As Short)
 
-        Public ReadOnly Property ReportList() As RingBuffer
-            Get
-                Return m_reportlist
-            End Get
-        End Property
+        Public Event RDS_Message As RDS_Delegate
+        Public Event FS_Message As FS_Delegate
 
-        Public Sub New(ByRef ldevice As Device)
-            mHIDForm = New HIDForm
-            mHIDForm.Show()
+        Public SomethingInBuffer As New AutoResetEvent(False)
+
+        Public SomethingToSend As New AutoResetEvent(False)
+
+        Public ToSend As Boolean
+
+        Dim IncMessageCounter As System.Int32
+
+        'Public ReadOnly Property ReportList() As RingBuffer
+        '    Get
+        '        Return m_reportlist
+        '    End Get
+        'End Property
+
+        Public Sub New(ByRef ldevice As Device) ', ByRef ReportConsumerThread As System.Threading.Thread)
+            'Me.mReportConsumerThread = ReportConsumerThread
             Me.mDevice = ldevice
-            mcHID.Connect(mHIDForm.Handle)
+
+            'Me.mDevice.Status = enHQCT_STATUS.HQCT_STATUS_INIT
+            REM wait fo mdevice.init!
         End Sub
+
+
+
+
+
+        Public Sub Disconnect()
+            mfrmHID.Close()
+        End Sub
+
+        Public Function Connect() As Boolean
+            Dim StartTime As DateTime = DateTime.Now
+            Dim outputBuffer As Byte() = New Byte(32) {}
+            Dim ResultStr As String
+            Connect = False
+            mfrmHID = New HID.frmHID
+            'mfrmHID.Show()
+
+            'mHandles = mfrmHID.GetHandle(&H4D8, &HA)
+            mfrmHID.StartRead(CBool(AssemblySettings.GetItem("Trace")), CInt(AssemblySettings.GetItem("HIDBufferSize")), CInt(AssemblySettings.GetItem("HIDKernelBuffer")), CInt(AssemblySettings.GetItem("ReadTimeOut")), CInt(AssemblySettings.GetItem("WriteTimeOut")))
+            Application.DoEvents()
+            If CInt(AssemblySettings.GetItem("gs-ireland_wait")) > 0 Then
+                [Thread].CurrentThread.Sleep(CInt(AssemblySettings.GetItem("gs-ireland_wait")))
+            End If
+            Application.DoEvents()
+            outputBuffer(1) = 128
+            ResultStr = mfrmHID.WriteHID(outputBuffer)
+            If ResultStr = "" Then
+
+
+                Do
+
+                    mDevice.DEVICE_STATUS_NORMAL_FLAG.WaitOne(100, False)
+
+                    If mDevice.Status = enHQCT_STATUS.HQCT_STATUS_NORMAL Then
+                        Exit Do
+                    End If
+
+                    Application.DoEvents()
+                    'Thread.Sleep(50)
+                Loop While DateTime.Now.Subtract(StartTime).TotalSeconds < CInt(AssemblySettings.GetItem("StartTimeOut"))
+                If mDevice.Status <> enHQCT_STATUS.HQCT_STATUS_NORMAL Then
+                    Throw (New ApplicationException("Trying to establish a connection - HQCT time out"))
+                Else
+                    Connect = True
+                End If
+            Else
+                Throw (New ApplicationException(ResultStr))
+            End If
+        End Function
+
+
         'Friend Sub OnDeviceChange(ByVal m As Message)
 
         'End Sub
@@ -71,316 +118,362 @@ Namespace HQCT
         '         *  
         '         *  Returns zero on success or non-zero on failure (device not ready).
         '         
-        Public Sub tune(ByVal frequency As Integer)
-            sendData(enHQCT_CMD.HQCT_TUNE, frequency)
-        End Sub
-        '*
-        '         *  Tunes the radio to a frequency in kHz, even in FM. So 94.3MHz should be
-        '         *  entered as 94300.  If you would like to store the frequency, in MHz as a
-        '         *  double or float then simply multiply by 1000.
-        '         *  
-        '         *  Returns zero on success or non-zero on failure (device not ready).
-        '         
-        'Public Sub afUpdate(ByVal frequency As Integer)
-        '    sendData(HQCT_AF_UPDATE, frequency)
-        'End Sub
-        '*
-        '         *  Seeks upward while trying to find a decent reception. You can change the
-        '         *  tolerance with hqct_set_sensitivity(). Will give up if it has checked
-        '         *  every frequency without any reception. It takes around 20seconds to 
-        '         *  complete a lap.
-        '         *
-        '         *  Returns zero on success or non-zero on failure (device not ready).
-        '         
-        'Public Sub seekUp()
-        '    sendData(HQCT_SEEK_UP, Nothing)
-        'End Sub
-        '*
-        '         *  Behaves like the above function but seeks down instead of up.
-        '         * 
-        '         *  Returns zero on success or non-zero on failure (device not ready).
-        '         
-        'Public Sub seekDown()
-        '    sendData(HQCT_SEEK_DOWN, Nothing)
-        'End Sub
-        '*
-        '         *  Cancels the current seeking operation, if any.
-        '         *
-        '         *  Returns zero on success or non-zero on failure (device not ready or 
-        '         *  not currently seeking).
-        '         
-        'Public Sub cancelSeek()
-        '    sendData(HQCT_CANCEL, Nothing)
-        'End Sub
-        '*
-        '         *  Sets the minimum level acceptable while seeking the radio. The default value
-        '         *  is defined in the header of hqct.c as 0x75.  Try using a higher level if you
-        '         *  are picking up too much static and choose a lower number if the seek is
-        '         *  skipping stations.
-        '         *  Note, this is this is the only option that is global to all attached radios.
-        '         
-        'Public Sub setMinLevel(ByVal level As Byte)
-        '    sendData(HQCT_SET_MIN_LEVEL, level)
-        'End Sub
-        Friend Sub sendData(ByVal type As enHQCT_CMD, ByVal data As Object)
-            ' Get EEPROM 
-            'If type = HQCT_EEPROM Then
-            '    device.Status = Device.HQCT_STATUS_INIT
-            '    SendOutputReport(New Byte() {128})
-            'End If
-            ' TEF commands, status does not matter 
-            Select Case type
-                Case enHQCT_CMD.HQCT_SET_TEF
-                    'Dim buffer As Byte() = New Byte(23) {}
-                    'Dim tef As Byte() = DirectCast(data, Byte())
-                    'Dim i As Integer = 0
-                    'While i < tef.Length AndAlso i + 3 < buffer.Length
-                    '    buffer(i + 3) = tef(i)
-                    '    i += 1
-                    'End While
-                    'buffer(0) = 24
-                    'buffer(1) = 48
-                    'buffer(2) = 64
-                    '' DUMB SLEEP
-                    'Thread.Sleep(100)
-                    'SendOutputReport(buffer)
-                    '' TODO, cancel seeking if Band change.
-                    'If (buffer(13) And 128) = 128 Then
-                    '    Device.Band = Device.HQCT_BAND_AM
-                    'Else
-                    '    Device.Band = Device.HQCT_BAND_FM
-                    'End If
-                    Exit Select
-                Case enHQCT_CMD.HQCT_SET_MIN_LEVEL
-                    'Device.MinLevel = (DirectCast(data, Byte)) And 255
-                    Exit Select
-            End Select
-            ' The radio isn't initialized, fail 
-            If mDevice.Status <= enHQCT_STATUS.HQCT_STATUS_EEPROM3 Then
-                Return
+        Public Sub Tune(ByVal Freq As FMRadioHAL.Frequency)
+            'sendData(enHQCT_CMD.HQCT_TUNE, frequency)
+            Dim stM As stTunerSettingMessage
+            Dim ResultStr As String
+            stM = TunerSettingMessage(Freq, FMRadioHAL.enBand.FM)
+
+            ResultStr = mfrmHID.WriteHID(stM.Bytes)
+            If ResultStr <> "" Then
+                Throw (New ApplicationException(ResultStr))
             End If
-            Dim frequency As Integer
-            ' (Tuner Commands) Commands that must be past initialization 
-            Select Case type
-                Case enHQCT_CMD.HQCT_TUNE
-                    ' Should tune no matter what 
-                    frequency = CType(data, Integer)
-                    Thread.Sleep(100)
-                    mDevice.Status = enHQCT_STATUS.HQCT_STATUS_NORMAL
-                    rawTuneFrequency(frequency)
-                    Exit Select
-                Case enHQCT_CMD.HQCT_AF_UPDATE
-                    'frequency = DirectCast(data, Integer)
-                    'Thread.Sleep(100)
-                    'Device.Status = Device.HQCT_STATUS_NORMAL
-                    'Device.Param = Device.Freq
-                    'rawTuneAFFrequency(frequency)
-                    Exit Select
-                Case enHQCT_CMD.HQCT_SEEK_UP
-                    ' Begin upward seek 
-                    'If Device.Status = Device.HQCT_STATUS_SEEKING_UP1 OrElse Device.Status = Device.HQCT_STATUS_SEEKING_UP2 Then
-                    '    Exit Select
-                    'End If
-                    'Thread.Sleep(100)
-                    'Device.Status = Device.HQCT_STATUS_SEEKING_UP1
-                    'Device.Param = Device.Freq
-                    'If Device.Band = Device.HQCT_BAND_FM Then
-                    '    rawTuneFrequency(Device.Param + 100)
-                    'Else
-                    '    rawTuneFrequency(Device.Param + 10)
-                    'End If
-                    Exit Select
-                Case enHQCT_CMD.HQCT_SEEK_DOWN
-                    ' Begin downward seek 
-                    'If Device.Status = Device.HQCT_STATUS_SEEKING_DN1 OrElse Device.Status = Device.HQCT_STATUS_SEEKING_DN2 Then
-                    '    Exit Select
-                    'End If
-                    'Thread.Sleep(100)
-                    'Device.Status = Device.HQCT_STATUS_SEEKING_DN1
-                    'Device.Param = Device.Freq
-                    'If Device.Band = Device.HQCT_BAND_FM Then
-                    '    rawTuneFrequency(Device.Param - 100)
-                    'Else
-                    '    rawTuneFrequency(Device.Param - 10)
-                    'End If
-                    Exit Select
-                    'Case HQCT_CANCEL
-                    '    ' Let the last tune finish, but cancel any seeking. 
-                    '    Device.Status = Device.HQCT_STATUS_NORMAL
-                    Exit Select
-            End Select
+
         End Sub
-        ' Tune to the frequency in kHz. 
-        Public Sub rawTuneFrequency(ByVal freq As Integer)
-            Dim data As Byte() = New Byte(10) {}
-            setTunerData(freq, data)
-            ' send out the first tuning packet 
-            Thread.Sleep(5)
-            SendOutputReport(data)
-        End Sub
-        ' Tune to the AF frequency in kHz. 
-        Private Sub rawTuneAFFrequency(ByVal freq As Integer)
-            'Dim data As Byte() = New Byte(10) {}
-            'setTunerData(freq, data)
-            'data(2) = data(2) Or 128
-            '' send out the first tuning packet 
-            'Thread.Sleep(5)
-            'SendOutputReport(data)
-        End Sub
-        Private Sub setTunerData(ByVal freq As Integer, ByRef data As Byte())
+
+        Private Function TunerSettingMessage(ByVal Freq As FMRadioHAL.Frequency, ByVal Band As FMRadioHAL.enBand) As stTunerSettingMessage
+            'Dim TunerSettingMessage As stTunerSettingMessage
             Const interm_fr As Integer = 10700
             ' Fif: intermediate Frequency    
-            Const FM_ref_fr As Integer = 100
+            'Const FM_ref_fr As Integer = 100
+            'Dim REF_FR As Short
             ' Fref: reference frequency      
-            Const FM_VCO As Byte = 2
+            'Const FM_VCO As Byte = 2
             ' p: VCO_Div                     
-            Const AM_ref_fr As Integer = 1
-            Const AM_VCO As Byte = 20
+            'Const AM_ref_fr As Integer = 1
+            'Const AM_VCO As Byte = 20
+            'Dim VCO As Byte
             Dim slope As Integer
-            Dim DAA As Integer
-            Dim PLL As Integer
+            'Dim DAA As Byte
+            'Dim PLL As Short
             Dim t As Integer
 
             ' Out of range ???
-            If (freq < 87500 OrElse freq > 108000) And (mDevice.Band = enHQCT_BAND.HQCT_BAND_FM) Then
-                freq = 87500
-            End If
+            'If (freq < 87500 OrElse freq > 108000) And (mDevice.Band = enHQCT_BAND.HQCT_BAND_FM) Then
+            'Freq = 87500
+            'End If
 
-            mDevice.Freq = freq
-            If mDevice.Band = enHQCT_BAND.HQCT_BAND_FM Then
-                ' Find upper alignment frequency 
-                t = 0
-                While (t < mDevice.AlignFreq.Length - 1) And (mDevice.AlignFreq(t) <= freq)
-                    t = t + 1
-                End While
-                ' Find the slope 
-                slope = CInt(Fix(1000000.0 * ((CInt(mDevice.DAAs(t)) - CInt(mDevice.DAAs(t - 1))) / (mDevice.AlignFreq(t) - mDevice.AlignFreq(t - 1)))))
-                'Debug.WriteLine(string.Format("HQCTS: Tuning to: {0:d}.{1:d} MHz", freq / 1000, (freq % 1000) / 10));
-                DAA = CInt(Fix(((CLng(mDevice.DAAs(t)) * CLng(1000000)) + (CLng(freq) * CLng(slope)) - (CLng(mDevice.AlignFreq(t)) * CLng(slope))) / CLng(1000000)))
-                PLL = CInt(Fix(((freq + interm_fr) * FM_VCO)) / FM_ref_fr)
-                For i As Integer = 0 To mDevice.FmTrailer.Length - 1
-                    data(i + 5) = mDevice.FmTrailer(i)
-                Next
-            Else
-                'Debug.WriteLine(string.Format("HQCTS: Tuning to: {0:d} kHz", freq));
-                DAA = 0
-                PLL = CInt(((((freq / 10) + interm_fr) * AM_VCO)) / AM_ref_fr)
-                For i As Integer = 0 To mDevice.AmTrailer.Length - 1
-                    data(i + 5) = mDevice.AmTrailer(i)
-                Next
-            End If
+
+            'mDevice.Freq = Freq
+
+            Select Case Band
+                Case FMRadioHAL.enBand.FM
+                    ' Find upper alignment frequency
+
+                    Dim AlignFreq(mDevice.EEPROM(10) - 1) As Integer
+                    Dim DAAs(mDevice.EEPROM(10) - 1) As Integer
+                    Dim i As Byte
+                    For i = 0 To (mDevice.EEPROM(10)) - CByte(1)
+                        AlignFreq(i) = 87500 + mDevice.EEPROM((&HB + 2 * i)) * 100
+                        DAAs(i) = mDevice.EEPROM((&HC + 2 * i))
+                    Next i
+
+                    t = 0
+                    While (t < AlignFreq.Length - 1) And (AlignFreq(t) <= Freq.Value * 10)
+                        t = t + 1
+                    End While
+                    ' Find the slope
+
+                    'For i As Integer = 0 To mDevice.FmTrailer.Length - 1
+                    '    data(i + 5) = mDevice.FmTrailer(i)
+                    'Next
+
+                    'TunerSettingMessage.Byte3 = mDevice.FmTrailer(0)'136 &H88
+                    TunerSettingMessage.AMFM = stTunerSettingMessage.enAMFM.FM
+                    TunerSettingMessage.BND = stTunerSettingMessage.enBND.FM_STD
+                    TunerSettingMessage.IFPR = stTunerSettingMessage.enIFPR.PRESCALER_10
+                    TunerSettingMessage.REF = stTunerSettingMessage.enREF.f100khz
+                    TunerSettingMessage.IFMT = stTunerSettingMessage.enIFMT.IFCounter_2ms
+
+                    'TunerSettingMessage.Byte4 = mDevice.FmTrailer(1) '160 &HA0
+                    TunerSettingMessage.BW = stTunerSettingMessage.enBW.Dynamic
+                    TunerSettingMessage.FLAG = stTunerSettingMessage.enFLAG.Flag_High
+                    TunerSettingMessage.LODX = stTunerSettingMessage.enLODX.Distance_Mode
+                    TunerSettingMessage.AMSM_FMBW = stTunerSettingMessage.enAMSM_FMBW.BW_Sel_MUTE_OFF
+                    TunerSettingMessage.AGC = stTunerSettingMessage.enAGC.AGC275mV_12mV
+                    TunerSettingMessage.KAGC = True
+
+                    TunerSettingMessage.Byte5 = mDevice.EEPROM(64 + 5)
+
+                    'TunerSettingMessage.Byte6 = mDevice.FmTrailer(3)
+                    TunerSettingMessage.CF = mDevice.EEPROM(64 + 12)
+                    TunerSettingMessage.TE = True
+                    'mDevice.FmTrailer(3) = CByte(&H80 Or (Buffer(&H4A - &H3E) And &H7F)) '12
+                    'mDevice.FmTrailer(4) = CByte(((Buffer((&H4E - &H3E)) And &HF) << 4) Or (Buffer((&H51 - &H3E)) And &HF)) '16  19 
+
+                    'Byte7
+                    TunerSettingMessage.FOF = mDevice.EEPROM(64 + 16)
+                    TunerSettingMessage.FGN = mDevice.EEPROM(64 + 19)
+
+                    slope = CInt(Fix(1000000.0 * ((CInt(DAAs(t)) - CInt(DAAs(t - 1))) / (AlignFreq(t) - AlignFreq(t - 1)))))
+                    'Debug.WriteLine(string.Format("HQCTS: Tuning to: {0:d}.{1:d} MHz", freq / 1000, (freq % 1000) / 10));
+                    'Byte 0,´1, 2
+                    TunerSettingMessage.ANT = CByte(Fix(((CLng(DAAs(t)) * CLng(1000000)) + (CLng(Freq.Value * 10) * CLng(slope)) - (CLng(AlignFreq(t)) * CLng(slope))) / CLng(1000000)))
+                    TunerSettingMessage.PLL = CShort(Fix((((Freq.Value * 10) + interm_fr) * VCO(TunerSettingMessage.BND))) / REF_FR(TunerSettingMessage.REF))
+                    TunerSettingMessage.MUTE = True
+                    'TunerSettingMessage.AF = True
+
+                Case FMRadioHAL.enBand.LW, FMRadioHAL.enBand.MW
+                    TunerSettingMessage.ANT = 0
+                    TunerSettingMessage.PLL = CShort(((((Freq.Value) + interm_fr) * VCO(TunerSettingMessage.BND))) / REF_FR(TunerSettingMessage.REF))
+                    'For i As Integer = 0 To mDevice.AmTrailer.Length - 1
+                    '    data(i + 5) = mDevice.AmTrailer(i)
+                    'Next
+                    'TunerSettingMessage.Byte3 = mDevice.AmTrailer(0) '157 9D
+                    TunerSettingMessage.BND = stTunerSettingMessage.enBND.AM_LW_MW_MONO
+                    TunerSettingMessage.IFPR = stTunerSettingMessage.enIFPR.PRESCALER_10
+                    TunerSettingMessage.REF = stTunerSettingMessage.enREF.f10khz
+                    TunerSettingMessage.IFMT = stTunerSettingMessage.enIFMT.IFCounter_2ms
+
+                    'TunerSettingMessage.Byte4 = mDevice.AmTrailer(1) '16 10
+                    TunerSettingMessage.BW = stTunerSettingMessage.enBW.Dynamic
+                    TunerSettingMessage.FLAG = stTunerSettingMessage.enFLAG.Flag_High
+                    TunerSettingMessage.LODX = stTunerSettingMessage.enLODX.Distance_Mode
+                    TunerSettingMessage.AMSM_FMBW = stTunerSettingMessage.enAMSM_FMBW.Alig_Mode_MUTE_ON
+                    TunerSettingMessage.AGC = stTunerSettingMessage.enAGC.AGC150mV_16mV
+                    TunerSettingMessage.KAGC = False
+
+                    'TunerSettingMessage.Byte5 = mDevice.AmTrailer(2) '114 72
+                    TunerSettingMessage.LSL = 2
+                    TunerSettingMessage.LST = 14
+                    TunerSettingMessage.Byte6 = 0
+                    TunerSettingMessage.Byte7 = 0
+            End Select
+
             ' Create string 
-            data(0) = 11
-            data(1) = 194
-            data(2) = CType(((PLL >> 8) And 255), Byte)
-            data(3) = CType(((PLL) And 255), Byte)
-            data(4) = CType(((DAA Or 128) And 255), Byte)
-            ' Set bit 7 High 
-        End Sub
-        Private Sub postSend(ByVal buffer As Byte())
-            ' Just sent the first tuning packet, prepare the second. 
-            If buffer(0) = 11 AndAlso buffer(1) = 194 Then
-                mDevice.TuneBuffer(0) = 6
-                mDevice.TuneBuffer(1) = buffer(1)
-                mDevice.TuneBuffer(2) = buffer(2)
-                mDevice.TuneBuffer(3) = buffer(3)
-                mDevice.TuneBuffer(4) = CType((buffer(4) And 127), Byte)
-                ' Set bit 7 low 
-                'Debug.WriteLine("HQCTS: Finished first packet.");
-                'TimerCallback timerDelegate = new TimerCallback(tuneTimeout);
-                'System.Threading.Timer stateTimer = new System.Threading.Timer(timerDelegate);
-                'stateTimer.Change(50, System.Threading.Timeout.Infinite);
-                Thread.Sleep(50)
-                SendOutputReport(mDevice.TuneBuffer)
-                mDevice.TuneBuffer(0) = 0
-            ElseIf (buffer(0) = 6) AndAlso (buffer(1) = 194) Then
-                ' Just sent the second tuning packet, see if we are seeking. 
-                'Debug.WriteLine("HQCT: Finished second packet.");
-                ' We should check the quality of the next report 
-                If mDevice.Status = enHQCT_STATUS.HQCT_STATUS_SEEKING_UP1 Then
-                    mDevice.Status = enHQCT_STATUS.HQCT_STATUS_SEEKING_UP2
-                End If
-                If mDevice.Status = enHQCT_STATUS.HQCT_STATUS_SEEKING_DN1 Then
-                    mDevice.Status = enHQCT_STATUS.HQCT_STATUS_SEEKING_DN2
-                End If
-            End If
-        End Sub
-        Private Sub tuneTimeout(ByVal state As Object)
-            SendOutputReport(mDevice.TuneBuffer)
-            mDevice.TuneBuffer(0) = 0
-        End Sub
-        Private Sub SendOutputReport(ByVal reportData As Byte())
-            Dim handle As IntPtr = mcHID.GetHandle(mcHID.VENDOR_ID, mcHID.PRODUCT_ID)
-            If Not (handle.Equals(IntPtr.Zero)) Then
-                Dim outputBuffer As Byte() = New Byte(mcHID.OUTPUT_BUFFER_SIZE) {}
-                Dim sb As New StringBuilder
-                Dim i As Integer = 0
-                While i < outputBuffer.Length - 1 AndAlso i < reportData.Length
-                    outputBuffer(i + 1) = reportData(i)
-                    sb.Append(String.Format("{0:x2} ", reportData(i)))
-                    i += 1
-                End While
-                Debug.WriteLine(sb.ToString())
-                ' Fix the byte array.
-                ' Make the call here, passing in the array.
-                mcHID.Write(handle, outputBuffer)
+            'Data(0) = 11
+            'Data(1) = 194
 
-            End If
-            postSend(reportData)
-        End Sub
-        Public Function ReadInputReport() As Byte()
-            SyncLock m_reportlist
-                If m_reportlist.Counter > 0 Then
-                    Return m_reportlist.Remove
-                End If
-            End SyncLock
+
+
+
+            'TunerSettingMessage.PLL = PLL
+            'TunerSettingMessage.MUTE = True
+            'TunerSettingMessage.ANT = DAA
+            'data(2) = CType(((PLL >> 8) And 255), Byte)
+            'data(3) = CType(((PLL) And 255), Byte)
+            'data(4) = CType(((DAA Or 128) And 255), Byte)
+            ' Set bit 7 High 
         End Function
+
+        Public Function VCO(ByVal BND As HQCT.stTunerSettingMessage.enBND) As Byte
+            Select Case BND
+                Case stTunerSettingMessage.enBND.FM_STD
+                    VCO = 2
+                Case stTunerSettingMessage.enBND.AM_SW_MONO, stTunerSettingMessage.enBND.AM_SW_STEREO
+                    VCO = 10
+                Case stTunerSettingMessage.enBND.FM_JAPAN, stTunerSettingMessage.enBND.FM_EAST
+                    VCO = 3
+                Case stTunerSettingMessage.enBND.AM_LW_MW_MONO, stTunerSettingMessage.enBND.AM_LW_MW_STEREO
+                    VCO = 20
+                Case stTunerSettingMessage.enBND.FM_WEATHER
+                    VCO = 1
+            End Select
+        End Function
+        Public Function REF_FR(ByVal REF As HQCT.stTunerSettingMessage.enREF) As Short
+            Select Case REF
+                Case stTunerSettingMessage.enREF.f100khz
+                    REF_FR = 100
+                Case stTunerSettingMessage.enREF.f10khz, stTunerSettingMessage.enREF.f10khz_2, stTunerSettingMessage.enREF.f10khz_3, stTunerSettingMessage.enREF.f10khz_4
+                    REF_FR = 10
+                Case stTunerSettingMessage.enREF.f20khz
+                    REF_FR = 20
+                Case stTunerSettingMessage.enREF.f25khz
+                    REF_FR = 25
+                Case stTunerSettingMessage.enREF.f50khz
+                    REF_FR = 50
+            End Select
+        End Function
+
 
         Protected Overrides Sub Finalize()
 
             MyBase.Finalize()
         End Sub
 
-        Private Sub mHIDForm_WM_HID_EVENT(ByRef m As System.Windows.Forms.Message) Handles mHIDForm.WM_HID_EVENT
-            Dim wParam As Integer = m.WParam.ToInt32
-            Dim lParam As IntPtr = m.LParam
-            Select Case wParam
-                Case mcHID.NOTIFY_PLUGGED
-                    If mcHID.GetVendorID(lParam) = mcHID.VENDOR_ID AndAlso mcHID.GetProductID(lParam) = mcHID.PRODUCT_ID Then
-                    End If
-                    Return
-                Case mcHID.NOTIFY_UNPLUGGED
-                    If mcHID.GetVendorID(lParam) = mcHID.VENDOR_ID AndAlso mcHID.GetProductID(lParam) = mcHID.PRODUCT_ID Then
-                    End If
-                    Return
-                Case mcHID.NOTIFY_CHANGED
-                    Dim Handle As IntPtr = mcHID.GetHandle(mcHID.VENDOR_ID, mcHID.PRODUCT_ID)
-                    If Not (Handle.Equals(IntPtr.Zero)) Then
-                        Debug.WriteLine("Setting read notification!")
-                        mcHID.SetReadNotify(Handle, True)
-                        mDevice.Status = enHQCT_STATUS.HQCT_STATUS_INIT
-                        SendOutputReport(New Byte() {128})
-                    End If
-                    Return
-                Case mcHID.NOTIFY_READ
-                    If mcHID.GetVendorID(lParam) = mcHID.VENDOR_ID AndAlso mcHID.GetProductID(lParam) = mcHID.PRODUCT_ID Then
-                        Dim inputBuffer As Byte() = New Byte(mcHID.INPUT_BUFFER_SIZE) {}
-                        Dim successfulRead As Boolean = False
-                        ' Fix the byte array.
-                        ' Make the call here, passing in the array.
 
-                        successfulRead = mcHID.Read(lParam, inputBuffer)
+        Public Sub decodeRDS(ByRef IncMessage As HQCT.stIncMessage)
+            Dim ignorePreviousBlock As Boolean
+            Static AReceived As Boolean
+            Static BReceived As Boolean
+            Static CReceived As Boolean
+            Static DReceived As Boolean
+            Static rdsBlockGroup As FMRadioHAL.stRDSRAWMessage
 
-                        If successfulRead Then
-                            SyncLock m_reportlist
-                                m_reportlist.Add(inputBuffer)
-                            End SyncLock
+            If Not ((IncMessage.RDS_STATUS.SYNC) And (Not IncMessage.RDS_STATUS.DOFL) And (Not IncMessage.RDS_STATUS.RSTD)) Then
+                ignorePreviousBlock = True
+                Return
+            End If
+
+            If ignorePreviousBlock Then
+                ignorePreviousBlock = False ' Reset
+                If IncMessage.RDS_COUNT_PBIN.PBI <> enBI.ib Then
+                    Debug.Write("IncMessage.RDS_COUNT_PBIN.PBI <> HQCT.enBI.ib!")
+                End If
+                'PrevRDSBlockID = enBlockType.ib ' ib
+                'PrevRDSBlockError = &H3 ' uncorrectable error
+            Else
+                'PrevRDSBlockID = CType(((rdsPrevious And &H1C) >> 2), enBlockType)
+                'PrevRDSBlockError = rdsPrevious And &H3
+                'ReceivedBlocksCounter(PrevRDSBlockID) += 1
+            End If
+
+
+            ' Check for A, B, C, D blocks to form a group
+
+
+
+            If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.A) And IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR Then
+                rdsBlockGroup.Block0 = IncMessage.LDAT
+
+                AReceived = True
+                BReceived = False
+                CReceived = False
+                DReceived = False
+            Else
+                If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.A) And IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR Then
+                    rdsBlockGroup.Block0 = IncMessage.PDAT
+                    AReceived = True
+                    BReceived = False
+                    CReceived = False
+                    DReceived = False
+                End If
+            End If
+            If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.B) And IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR And AReceived Then
+                rdsBlockGroup.Block1 = IncMessage.LDAT
+
+                BReceived = True
+                CReceived = False
+                DReceived = False
+            Else
+                If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.B) And (IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR) And AReceived Then
+                    rdsBlockGroup.Block1 = IncMessage.PDAT
+                    BReceived = True
+                    CReceived = False
+                    DReceived = False
+                End If
+            End If
+            If ((IncMessage.RDS_STATUS.LBI = HQCT.enBI.C) Or (IncMessage.RDS_STATUS.LBI = HQCT.enBI.C2)) And (IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR) And AReceived Then
+                rdsBlockGroup.Block2 = IncMessage.LDAT
+                CReceived = True
+                DReceived = False
+            Else
+                If ((IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.C) Or (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.C2)) And (IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR) And BReceived Then
+                    rdsBlockGroup.Block2 = IncMessage.PDAT
+                    CReceived = True
+                    DReceived = False
+                End If
+            End If
+            If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.D) And (IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR) And CReceived Then
+                rdsBlockGroup.Block3 = IncMessage.LDAT
+                DReceived = True
+            Else
+                If (IncMessage.RDS_COUNT_PBIN.PBI = HQCT.enBI.D) And (IncMessage.RDS_COUNT_PBIN.EPB < HQCT.enEB.UNCORRECTABLE_ERROR) And CReceived Then
+                    rdsBlockGroup.Block3 = IncMessage.PDAT
+                    DReceived = True
+                End If
+            End If
+
+            If AReceived And BReceived And CReceived And DReceived Then
+                RaiseEvent RDS_Message(rdsBlockGroup)
+                'interpreter.decode(rdsBlockGroup, 8)
+                AReceived = False
+                BReceived = False
+                CReceived = False
+                DReceived = False
+            End If
+
+            ' Try not to miss a trailing A block
+            If (IncMessage.RDS_STATUS.LBI = HQCT.enBI.A) And (IncMessage.RDS_STATUS.ELB < HQCT.enEB.UNCORRECTABLE_ERROR) Then
+                rdsBlockGroup.Block0 = IncMessage.LDAT
+                AReceived = True
+                BReceived = False
+                CReceived = False
+                DReceived = False
+            End If
+
+        End Sub 'decode
+
+
+
+        Private Sub mfrmHID_NewMessage(ByRef Buffer() As Byte) Handles mfrmHID.NewMessage
+            Dim IncMessage As stIncMessage
+            Dim Status As FMRadio.HQCT.enHQCT_STATUS
+            Dim L As Byte
+
+            'For L = 0 To CByte(UBound(Buffer))
+            '    Debug.Write(Hex(Buffer(L)) + ", ")
+            'Next
+            'Debug.WriteLine(" ")
+            If IncMessageCounter >= IncMessageCounter.MaxValue Then
+                IncMessageCounter = 0
+            Else
+                IncMessageCounter = IncMessageCounter + CInt(1)
+            End If
+
+            Status = mDevice.Status
+            Select Case Status
+                Case enHQCT_STATUS.HQCT_STATUS_INIT
+                    Status = enHQCT_STATUS.HQCT_STATUS_EEPROM1
+                    For L = 1 To 32
+                        If Buffer(L) = &H54 Then
                         Else
-                            Debug.Assert(False)
+                            Status = enHQCT_STATUS.HQCT_STATUS_INIT
+                            Exit For
                         End If
+                    Next L
+                Case enHQCT_STATUS.HQCT_STATUS_EEPROM1
+                    [Array].Copy(Buffer, 1, mDevice.EEPROM, 0, 32)
+                    Status = enHQCT_STATUS.HQCT_STATUS_EEPROM2
+                Case enHQCT_STATUS.HQCT_STATUS_EEPROM2
+                    [Array].Copy(Buffer, 1, mDevice.EEPROM, 32, 32)
+                    Status = enHQCT_STATUS.HQCT_STATUS_EEPROM3
+                Case enHQCT_STATUS.HQCT_STATUS_EEPROM3
+                    [Array].Copy(Buffer, 1, mDevice.EEPROM, 64, 32)
+                    Status = enHQCT_STATUS.HQCT_STATUS_EEPROM_END
+                Case enHQCT_STATUS.HQCT_STATUS_EEPROM_END
+                    Status = enHQCT_STATUS.HQCT_STATUS_NORMAL
+                    For L = 1 To 32
+                        If Buffer(L) = &H74 Then
+                        Else
+                            Status = enHQCT_STATUS.HQCT_STATUS_INIT
+                            Exit For
+                        End If
+                    Next L
+                Case enHQCT_STATUS.HQCT_STATUS_NORMAL
+
+                    IncMessage.Bytes = Buffer
+                    decodeRDS(IncMessage)
+
+                    'RaiseEvent NewMessage(IncMessage)
+
+                    Dim Result As Short = CShort(IncMessage.LEVEL.LEVEL)
+                    If IncMessage.USNWAM.USN = 0 Then
+                        Result = Result << 7
+                    Else
+                        Result = (Result << 7) \ CShort(IncMessage.USNWAM.USN)
                     End If
-                    Return
+                    If IncMessage.USNWAM.WAM > 0 Then
+                        Result = CShort(Result) \ CShort(IncMessage.USNWAM.WAM)
+                    End If
+                    mDevice.Level = Result
+                    RaiseEvent FS_Message(Result)
+
+
             End Select
+            mDevice.Status = Status
+
+
+
+
+            'decodeRDS(IncMessage)
+            'RaiseEvent NewMessage(IncMessage)
+
+
         End Sub
+
+
     End Class
+
+
 End Namespace

@@ -2,27 +2,25 @@ Option Strict On
 
 Namespace HQCT
 
-    Public Class RingBuffer
+    Friend Class RingBuffer
         Private mPtrIn As Integer = 0
         Private mPtrOut As Integer = 0
-
+        Private mRingElemNum As Integer
         Private mRing() As Byte
+
         Private Function GetPtr(ByVal Ptr As Integer) As Integer
             GetPtr = Ptr * mcHID.INPUT_BUFFER_SIZE
         End Function
         Private Function RingElemSize() As Integer
             RingElemSize = mRing.GetLength(0) \ mcHID.INPUT_BUFFER_SIZE
         End Function
-        Private mRingElemNum As Integer
+
 
         ReadOnly Property Counter() As Integer
             Get
                 Return mRingElemNum
             End Get
         End Property
-
-
-
 
         Public Sub New(ByVal SizeForReports As Integer)
             'mRing(SizeReports)(3)
