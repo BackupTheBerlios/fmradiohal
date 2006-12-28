@@ -4,7 +4,7 @@ Imports System
 ' To use this .NET Assembly as COM Object
 Imports System.Runtime.InteropServices
 Imports System.Reflection
-
+Imports System.Threading
 
 Namespace FMRadioHAL
     Public Delegate Sub RDSRAWMessageavailable_Delegate(ByRef RDSRAWMessage As stRDSRAWMessage)
@@ -14,6 +14,10 @@ Namespace FMRadioHAL
     Public Delegate Sub AutoTuneFinished_Delegate(ByVal Freq As FMRadioHAL.Frequency)
 
     Public Delegate Sub AnyEvent_Delegate(ByRef Anything As Object)
+
+
+
+
 
     <ComSourceInterfaces(GetType(I_FMRadioHAL_Events))> _
     Public Class C_FMRadioHAL
@@ -26,89 +30,124 @@ Namespace FMRadioHAL
         Public Event AutoTuneFinished As AutoTuneFinished_Delegate
         Public Event AnyEvent As AnyEvent_Delegate
 
-        Private mCom As HQCT.Communication
+        Private WithEvents mCom As HQCT.Communication
         Private mDevice As HQCT.Device
 
-        Private mReportConsumerThread As System.Threading.Thread
-        Private mReportConsumer As HQCT.ReportConsumer
-        Private mTunerSettings As HQCT.TunerSettings
-        Private WithEvents mSignalProcessorStatus As HQCT.SignalProcessorStatus
+        'Private mReportConsumerThread As System.Threading.Thread
+        'Private mReportConsumer As HQCT.ReportConsumer
+        'Private mTunerSettings As HQCT.TunerSettings
+        'Private WithEvents offmSignalProcessorStatus As HQCT.SignalProcessorStatus
 
-        Private WithEvents mRDSStatus As RDS.RDSStatus
+        'Private WithEvents mRDSStatus As RDS.RDSStatus
 
         Private mMute As Boolean
         Private mStereoMono As Boolean
         Private mStrError As String
 
-        REM to remove !!!
-        Private mFreq As New FMRadioHAL.Frequency(CShort(9440))
+        Private mConnected As System.Boolean
 
-        Public Function GetLastError() As FMRadioHAL.stError Implements FMRadioHAL.I_FMRadioHAL.GetLastError
-            Dim mErr As FMRadioHAL.stError
-            mErr.strError = mStrError
-            Return mErr
-        End Function
+        'Private mFreq As New FMRadioHAL.Frequency
+
+        'Public Function GetLastError() As FMRadioHAL.stError Implements FMRadioHAL.I_FMRadioHAL.GetLastError
+        '    Dim mErr As FMRadioHAL.stError
+        '    mErr.strError = mStrError
+        '    Return mErr
+        'End Function
 
         ' returns the supported functions (see struct stSupFunc) 
+
         Public Function Supported_Functions() As FMRadioHAL.stSupFunc Implements FMRadioHAL.I_FMRadioHAL.Supported_Functions
-            Dim SupFunc As FMRadioHAL.stSupFunc
-            SupFunc.AF = True
-            SupFunc.Autotune = True
 
-            SupFunc.FM.MinFreq = 6000
-            SupFunc.FM.MaxFreq = 16000
-            SupFunc.FM.TuneStep = 10
+            Supported_Functions.AF = True
+            Supported_Functions.Autotune = True
+
+            Supported_Functions.FM.MinFreq = 8750
+            Supported_Functions.FM.MaxFreq = 10800
+            Supported_Functions.FM.TuneStep = 10
 
 
-            SupFunc.MW.MinFreq = 500
-            SupFunc.MW.MaxFreq = 1600
-            SupFunc.MW.TuneStep = 10
+            Supported_Functions.MW.MinFreq = 500
+            Supported_Functions.MW.MaxFreq = 1600
+            Supported_Functions.MW.TuneStep = 10
 
-            SupFunc.LW.MinFreq = 150
-            SupFunc.LW.MaxFreq = 280
-            SupFunc.LW.TuneStep = 10
+            Supported_Functions.LW.MinFreq = 150
+            Supported_Functions.LW.MaxFreq = 280
+            Supported_Functions.LW.TuneStep = 10
 
             'no SW, band
-            SupFunc.SW.MinFreq = 0
-            SupFunc.SW.MaxFreq = 0
-            SupFunc.SW.TuneStep = 0
+            Supported_Functions.SW.MinFreq = 0
+            Supported_Functions.SW.MaxFreq = 0
+            Supported_Functions.SW.TuneStep = 0
 
-            SupFunc.Freq = True
-            SupFunc.FreqUpDown = True
+            Supported_Functions.Freq = True
+            Supported_Functions.FreqUpDown = True
 
-            SupFunc.Stereo = True
-            SupFunc.Mute = True
-            SupFunc.Vol = True
-            SupFunc.VolUpDown = True
+            Supported_Functions.Stereo = True
+            Supported_Functions.Mute = True
+            Supported_Functions.Vol = True
+            Supported_Functions.VolUpDown = True
         End Function
 
         '
         Public Sub Connect() Implements FMRadioHAL.I_FMRadioHAL.Connect
+
             mDevice = New HQCT.Device
-            mCom = New HQCT.Communication(mDevice)
-            mTunerSettings = New HQCT.TunerSettings(mCom)
-            mSignalProcessorStatus = New HQCT.SignalProcessorStatus
-            mRDSStatus = New RDS.RDSStatus
 
-            mReportConsumer = New HQCT.ReportConsumer(mCom, mDevice, mSignalProcessorStatus, mRDSStatus, mTunerSettings)
-            mReportConsumerThread = New System.Threading.Thread(AddressOf mReportConsumer.ConsumeReport)
-            mReportConsumerThread.Start()
+            'mReportConsumer = New HQCT.ReportConsumer(mCom, mDevice)
+            'mReportConsumerThread = New System.Threading.Thread(AddressOf mReportConsumer.ConsumeReport)
 
+            'mTunerSettings = New HQCT.TunerSettings(mCom)
+            'mSignalProcessorStatus = New HQCT.SignalProcessorStatus
+            'mRDSStatus = New RDS.RDSStatus
+
+
+            mCom = New HQCT.Communication(mDevice) ' , mReportConsumerThread)
+
+            'If mCom.Connect Then
+            'mReportConsumer.mCom = mCom
+            mConnected = mCom.Connect()
+
+
+            'mDevice.Freq.Value = Me.Supported_Functions.FM.MinFreq
+            'mCom.Tune(New Frequency(mDevice.Freq.Value))
+            'End If
         End Sub
 
         'close
         Public Sub DisConnect() Implements FMRadioHAL.I_FMRadioHAL.DisConnect
-            mDevice = Nothing
+
+            mCom.Disconnect()
             mCom = Nothing
-            mTunerSettings = Nothing
-            mSignalProcessorStatus = Nothing
-            mRDSStatus = Nothing
-            If Not (mReportConsumer Is Nothing) Then
-                mReportConsumer.RequestStop()
-            End If
+
+            mDevice = Nothing
+
+
+            'mSignalProcessorStatus = Nothing
+            'mRDSStatus = Nothing
+            'If Not (mReportConsumer Is Nothing) Then
+            '    mReportConsumer.RequestStop()
+            'End If
+            mConnected = False
         End Sub
 
         Public Sub AutoTune(ByVal Direction As FMRadioHAL.enDirections, ByVal StopLevel As Int16) Implements FMRadioHAL.I_FMRadioHAL.AutoTune 'Richtung Vorwärts/Rückwärts , minimale Feldstärke (DX Function)
+            Select Case Direction
+                Case enDirections.Down
+                    Do
+                        Me.FreqDown()
+                        System.Windows.Forms.Application.DoEvents()
+                        Thread.Sleep(200)
+                        System.Windows.Forms.Application.DoEvents()
+                    Loop Until Me.mDevice.Level > StopLevel
+                Case enDirections.UP
+                    Do
+                        Me.FreqUp()
+                        System.Windows.Forms.Application.DoEvents()
+                        Thread.Sleep(200)
+                        System.Windows.Forms.Application.DoEvents()
+                    Loop Until Me.mDevice.Level > StopLevel
+            End Select
+
         End Sub
 
 
@@ -128,17 +167,37 @@ Namespace FMRadioHAL
 
         Public Property Freq() As Frequency Implements FMRadioHAL.I_FMRadioHAL.Freq
             Get
-                Return mFreq
+                Return mDevice.Freq
             End Get
             Set(ByVal lValue As Frequency)
-                mFreq = lValue
-                mCom.tune(lValue.Value * 10)
+                mDevice.Freq = lValue
+                mCom.Tune(mDevice.Freq)
             End Set
         End Property
 
         Public Sub FreqUp() Implements FMRadioHAL.I_FMRadioHAL.FreqUP
+            If mDevice.Freq.Value = mDevice.Freq.FREQ_UNDEFINED Then
+                mDevice.Freq.Value = Me.Supported_Functions.FM.MinFreq
+            Else
+                If mDevice.Freq.Value >= Me.Supported_Functions.FM.MaxFreq Then
+                    mDevice.Freq.Value = Me.Supported_Functions.FM.MinFreq
+                Else
+                    mDevice.Freq.Value = mDevice.Freq.Value + CShort(10)
+                End If
+            End If
+            Me.Freq = mDevice.Freq
         End Sub
         Public Sub FreqDown() Implements FMRadioHAL.I_FMRadioHAL.FreqDown
+            If mDevice.Freq.Value = mDevice.Freq.FREQ_UNDEFINED Then
+                mDevice.Freq.Value = Me.Supported_Functions.FM.MaxFreq
+            Else
+                If mDevice.Freq.Value <= Me.Supported_Functions.FM.MinFreq Then
+                    mDevice.Freq.Value = Me.Supported_Functions.FM.MaxFreq
+                Else
+                    mDevice.Freq.Value = mDevice.Freq.Value - CShort(10)
+                End If
+            End If
+            Me.Freq = mDevice.Freq
         End Sub
         Public Property Mono() As Boolean Implements FMRadioHAL.I_FMRadioHAL.Mono
             Get
@@ -193,16 +252,23 @@ Namespace FMRadioHAL
         End Sub
 
         Public Sub New()
-
+            If CBool(AssemblySettings.GetItem("Trace")) = True Then
+                Dim Listener As New System.Diagnostics.TextWriterTraceListener([Assembly].GetExecutingAssembly.Location + ".log")
+                System.Diagnostics.Trace.Listeners.Add(Listener)
+                Trace.AutoFlush = True
+                Trace.WriteLine("Trace started:" + DateTime.Now.ToString)
+            End If
         End Sub
 
-        Private Sub mRDSStatus_RDS_Message(ByRef RDSMessage As stRDSRAWMessage) Handles mRDSStatus.RDS_Message
+        Private Sub mCom_RDS_Message(ByRef RDSMessage As stRDSRAWMessage) Handles mCom.RDS_Message
             RDSMessage.TunedFreq = Freq
             RaiseEvent RDSRAWMessageavailable(RDSMessage)
         End Sub
 
-        Private Sub mSignalProcessorStatus_FS_Message(ByVal Strength As Short) Handles mSignalProcessorStatus.FS_Message
-            RaiseEvent FieldStrength(Strength)
+
+
+        Private Sub mCom_FS_Message(ByVal Value As Short) Handles mCom.FS_Message
+            RaiseEvent FieldStrength(Value)
         End Sub
     End Class
 

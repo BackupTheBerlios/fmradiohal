@@ -83,7 +83,8 @@ Imports System.Configuration
     Private settings As IDictionary
 
     Public Sub New()
-        MyClass.New([Assembly].GetCallingAssembly())
+        MyClass.New([Assembly].GetExecutingAssembly())
+
     End Sub
 
     Public Sub New(ByVal asm As [Assembly])
@@ -106,8 +107,12 @@ Imports System.Configuration
         End Get
     End Property
 
+    Public Overloads Shared Function GetItem(ByRef key As String) As String
+        Return CStr(GetConfig.Item(key))
+    End Function
+
     Public Overloads Shared Function GetConfig() As IDictionary
-        Return GetConfig([Assembly].GetCallingAssembly())
+        Return GetConfig([Assembly].GetExecutingAssembly())
     End Function
 
     Public Overloads Shared Function GetConfig(ByVal asm As [Assembly]) As IDictionary
@@ -132,6 +137,7 @@ Imports System.Configuration
                 End If
             Next node
         Catch
+            MsgBox(Err.Description)
         End Try
 
         Return Nothing

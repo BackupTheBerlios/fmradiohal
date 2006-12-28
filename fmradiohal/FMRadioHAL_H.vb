@@ -26,12 +26,12 @@ Namespace FMRadioHAL
         Sub VolumeUP()
         Sub VolumeDown()
 
-        Sub Connect() 'Establish connection (via RS232, Parallelport, USB, ...) to Radio
-        Sub DisConnect() 'free resources,...
+        Sub Connect()  'Establish connection (via RS232, Parallelport, USB, ...) to Radio
+        Sub DisConnect()  'free resources,...
 
         Function Supported_Functions() As stSupFunc 'Check this value if you want to know which functions are supported by the current tuner
 
-        Function GetLastError() As stError 'Reports the last occured error
+        'Function GetLastError() As stError 'Reports the last occured error
 
         Function Info() As String 'Reports the Assembly-Attribute "Title" to COM Clients
 
@@ -127,8 +127,8 @@ Namespace FMRadioHAL
             mValue = Value
         End Sub
         'Overloaded
-        Public Sub New(ByVal DoubleValue As Double)
-            DoubleValue = DoubleValue
+        Public Sub New(ByVal Value As Double)
+            DoubleValue = Value
         End Sub
         'Overloaded
         Public Sub New(ByVal RDSFormat As Byte, Optional ByVal LF_MF As Boolean = False)
@@ -181,6 +181,7 @@ Namespace FMRadioHAL
         MW = 2
         LW = 3
         SW = 4
+        FM_W = 5 'Weather Band
         '... ?
     End Enum
 
@@ -217,6 +218,9 @@ Namespace FMRadioHAL
         Public Anything As Object
 
     End Structure
+
+
+
 
     'Public Structure stRDSRAWMessage
     '    Public Block0 As System.Int16

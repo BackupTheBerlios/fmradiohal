@@ -1,7 +1,7 @@
 <VisualStudioProject>
     <VisualBasic LastOpenVersion = "7.10.6030" >
         <Build>
-            <Settings ReferencePath = "D:\Eigene Dateien\Visual Studio Projects\hidclass\bin\" >
+            <Settings ReferencePath = "" >
                 <Config
                     Name = "Debug"
                     EnableASPDebugging = "false"
@@ -16,14 +16,8 @@
                     StartProgram = ""
                     StartURL = ""
                     StartWorkingDirectory = ""
-                    StartWithIE = "false"
-                >
-                    <InteropRegistration
-                        RegisteredComClassic = "true"
-                        RegisteredOutput = "FMRadioHAL.dll"
-                        RegisteredTypeLib = "FMRadioHAL.tlb"
-                    />
-                </Config>
+                    StartWithIE = "true"
+                />
                 <Config
                     Name = "Release"
                     EnableASPDebugging = "false"
@@ -38,7 +32,7 @@
                     StartProgram = ""
                     StartURL = ""
                     StartWorkingDirectory = ""
-                    StartWithIE = "false"
+                    StartWithIE = "true"
                 />
             </Settings>
         </Build>
@@ -46,7 +40,7 @@
             CopyProjectDestinationFolder = ""
             CopyProjectUncPath = ""
             CopyProjectOption = "0"
-            ProjectView = "ShowAllFiles"
+            ProjectView = "ProjectFiles"
             ProjectTrust = "0"
         />
     </VisualBasic>
