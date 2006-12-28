@@ -1,3 +1,6 @@
+Imports System.Runtime.InteropServices
+Imports System.Reflection
+
 Public Class Form1
     Inherits System.Windows.Forms.Form
 
@@ -19,7 +22,7 @@ Public Class Form1
         ' Initialisierungen nach dem Aufruf InitializeComponent() hinzufügen
 
 
-        Me.Timer1.Enabled = True
+
 
     End Sub
 
@@ -41,23 +44,26 @@ Public Class Form1
     'Verwenden Sie nicht den Code-Editor zur Bearbeitung.
     Friend WithEvents TextBox1 As System.Windows.Forms.TextBox
     Friend WithEvents Button1 As System.Windows.Forms.Button
-    Friend WithEvents Timer1 As System.Windows.Forms.Timer
     Friend WithEvents RdsInterpreter_Ctrl1 As HALTest.RDSInterpreter_Ctrl
     Friend WithEvents Label1 As System.Windows.Forms.Label
     Friend WithEvents FStxt As System.Windows.Forms.Label
     Friend WithEvents MinusBtn As System.Windows.Forms.Button
     Friend WithEvents PlusBtn As System.Windows.Forms.Button
+    Friend WithEvents RadioTextChangeLbl As System.Windows.Forms.Label
+    Friend WithEvents Button2 As System.Windows.Forms.Button
+    Friend WithEvents Button3 As System.Windows.Forms.Button
 
     <System.Diagnostics.DebuggerStepThrough()> Private Sub InitializeComponent()
-        Me.components = New System.ComponentModel.Container
         Me.TextBox1 = New System.Windows.Forms.TextBox
         Me.Button1 = New System.Windows.Forms.Button
-        Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.RdsInterpreter_Ctrl1 = New HALTest.RDSInterpreter_Ctrl
         Me.Label1 = New System.Windows.Forms.Label
         Me.FStxt = New System.Windows.Forms.Label
         Me.MinusBtn = New System.Windows.Forms.Button
         Me.PlusBtn = New System.Windows.Forms.Button
+        Me.RadioTextChangeLbl = New System.Windows.Forms.Label
+        Me.Button2 = New System.Windows.Forms.Button
+        Me.Button3 = New System.Windows.Forms.Button
         Me.SuspendLayout()
         '
         'TextBox1
@@ -75,9 +81,6 @@ Public Class Form1
         Me.Button1.Size = New System.Drawing.Size(64, 24)
         Me.Button1.TabIndex = 3
         Me.Button1.Text = "SetFreq"
-        '
-        'Timer1
-        '
         '
         'RdsInterpreter_Ctrl1
         '
@@ -103,24 +106,51 @@ Public Class Form1
         '
         'MinusBtn
         '
-        Me.MinusBtn.Location = New System.Drawing.Point(224, 16)
+        Me.MinusBtn.Location = New System.Drawing.Point(0, 32)
         Me.MinusBtn.Name = "MinusBtn"
-        Me.MinusBtn.Size = New System.Drawing.Size(40, 24)
+        Me.MinusBtn.Size = New System.Drawing.Size(40, 16)
         Me.MinusBtn.TabIndex = 6
         Me.MinusBtn.Text = "-"
         '
         'PlusBtn
         '
-        Me.PlusBtn.Location = New System.Drawing.Point(0, 16)
+        Me.PlusBtn.Location = New System.Drawing.Point(224, 32)
         Me.PlusBtn.Name = "PlusBtn"
-        Me.PlusBtn.Size = New System.Drawing.Size(40, 24)
+        Me.PlusBtn.Size = New System.Drawing.Size(40, 16)
         Me.PlusBtn.TabIndex = 6
         Me.PlusBtn.Text = "+"
+        '
+        'RadioTextChangeLbl
+        '
+        Me.RadioTextChangeLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.RadioTextChangeLbl.Location = New System.Drawing.Point(464, 8)
+        Me.RadioTextChangeLbl.Name = "RadioTextChangeLbl"
+        Me.RadioTextChangeLbl.Size = New System.Drawing.Size(224, 40)
+        Me.RadioTextChangeLbl.TabIndex = 7
+        '
+        'Button2
+        '
+        Me.Button2.Location = New System.Drawing.Point(0, 8)
+        Me.Button2.Name = "Button2"
+        Me.Button2.Size = New System.Drawing.Size(40, 16)
+        Me.Button2.TabIndex = 8
+        Me.Button2.Text = "<<"
+        '
+        'Button3
+        '
+        Me.Button3.Location = New System.Drawing.Point(224, 8)
+        Me.Button3.Name = "Button3"
+        Me.Button3.Size = New System.Drawing.Size(40, 16)
+        Me.Button3.TabIndex = 9
+        Me.Button3.Text = ">>"
         '
         'Form1
         '
         Me.AutoScaleBaseSize = New System.Drawing.Size(5, 13)
         Me.ClientSize = New System.Drawing.Size(712, 757)
+        Me.Controls.Add(Me.Button3)
+        Me.Controls.Add(Me.Button2)
+        Me.Controls.Add(Me.RadioTextChangeLbl)
         Me.Controls.Add(Me.MinusBtn)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.RdsInterpreter_Ctrl1)
@@ -152,7 +182,7 @@ Public Class Form1
         'PTName.Text = mRDSInterpreter.CurrentProgram.ProgramTypeName
     End Sub
 
-    Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
+    Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs)
         'If mFMRadioHal.mCom.ReportList Is Nothing Then
         'Else
         '    replbl.Text = mFMRadioHal.mCom.ReportList.Counter
@@ -172,13 +202,12 @@ Public Class Form1
     End Sub
 
     Protected Overrides Sub Finalize()
+
         MyBase.Finalize()
     End Sub
 
     Private Sub Form1_Load(ByVal sender As Object, ByVal e As System.EventArgs) Handles MyBase.Load
         'Dim Test As New System.DateTime(2006, 10, 14)
-
-
         mFMRadioHal.Connect()
     End Sub
 
@@ -191,12 +220,38 @@ Public Class Form1
     End Sub
 
     Private Sub PlusBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles PlusBtn.Click
-        TextBox1.Text = CStr(CShort(TextBox1.Text) + 10)
-        mFMRadioHal.Freq = New FMRadio.FMRadioHAL.Frequency(CShort(TextBox1.Text))
+        mFMRadioHal.FreqUp()
+        TextBox1.Text = CStr(mFMRadioHal.Freq.Value)
     End Sub
 
     Private Sub MinusBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MinusBtn.Click
-        TextBox1.Text = CStr(CShort(TextBox1.Text) - 10)
-        mFMRadioHal.Freq = New FMRadio.FMRadioHAL.Frequency(CShort(TextBox1.Text))
+        mFMRadioHal.FreqDown()
+        TextBox1.Text = CStr(mFMRadioHal.Freq.Value)
+    End Sub
+
+
+
+    Private Sub mFMRadioHal_Stereo(ByVal Stereo_Pilot_Detected As Boolean) Handles mFMRadioHal.Stereo
+
+    End Sub
+
+    Private Sub mRDSInterpreter_RadioTextChange(ByVal oldText() As Char) Handles mRDSInterpreter.RadioTextChange
+        RadioTextChangeLbl.Text = oldText
+    End Sub
+
+    Private Sub Button3_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button3.Click
+        mFMRadioHal.AutoTune(FMRadio.FMRadioHAL.enDirections.UP, 10000)
+    End Sub
+
+    Private Sub Button2_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Button2.Click
+        mFMRadioHal.AutoTune(FMRadio.FMRadioHAL.enDirections.Down, 10000)
     End Sub
 End Class
+
+
+
+
+
+
+
+

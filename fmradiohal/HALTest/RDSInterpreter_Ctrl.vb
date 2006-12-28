@@ -30,7 +30,11 @@ Public Class RDSInterpreter_Ctrl
         Dim PIEON As RDSInterpreter.RDSInterpreter.ProgramIdentifier
         Dim iItem As Integer
 
+
         Me.ProgramIdentifier_Ctrl1.UpdatePI(lRDSInterpreter.CurrentProgram)
+        'CF
+        Exit Sub
+
         iItem = EONLB.SelectedIndex
         EONLB.Items.Clear()
         For Each iEON In lRDSInterpreter.EEONList
